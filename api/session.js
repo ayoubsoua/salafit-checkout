@@ -6,20 +6,15 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { amount } = req.body || {};
   const apiKey = process.env.WHOP_API_KEY;
-  const companyId = process.env.WHOP_COMPANY_ID;
-  const response = await fetch('https://api.whop.com/api/v2/plans', {
+  const response = await fetch('https://api.whop.com/api/v2/checkout-sessions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      company_id: companyId,
-      product_id: 'prod_2ACpiZ0oa3Jhl',
-      plan_type: 'one_time',
-      initial_price: parseFloat(amount),
-      currency: 'gbp',
-      visibility: 'hidden',
+      plan_id: 'plan_3GbhnONcpWhyh',
     }),
   });
   const data = await response.json();
+  console.log('Whop response:', JSON.stringify(data));
   if (!response.ok) return res.status(500).json({ error: 'Whop failed', detail: data });
-  return res.status(200).json({ sessionId: data.id, secret: data.secret || '', purchaseUrl: data.purchase_url || '' });
+  return res.status(200).json({ sessionId: data.id, secret: data.sessionKey || data.secret || '', raw: data });
 }
