@@ -20,7 +20,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Create a one-time plan with exact amount
     const response = await fetch('https://api.whop.com/api/v2/plans', {
       method: 'POST',
       headers: {
@@ -29,6 +28,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         company_id: companyId,
+        product_id: 'prod_2ACpiZ0oa3Jhl',
         plan_type: 'one_time',
         initial_price: parseFloat(amount),
         currency: 'gbp',
@@ -43,16 +43,11 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Whop API failed', status: response.status, detail: data });
     }
 
-    // The purchase_url contains the session ID we need
+    const sessionId = data.id;
+    const secret = data.secret || '';
     const purchaseUrl = data.purchase_url || '';
-    const sessionId = data.id || purchaseUrl.split('/').filter(Boolean).pop();
 
-    return res.status(200).json({
-      sessionId: sessionId,
-      secret: data.secret || '',
-      purchaseUrl: purchaseUrl,
-      raw: data,
-    });
+    return res.status(200).json({ sessionId, secret, purchaseUrl });
 
   } catch (err) {
     console.error('Error:', err);
